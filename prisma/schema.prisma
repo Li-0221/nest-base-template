@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  role         Role          @default(USER)
+  password     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tags         Tag[] // 用户拥有的标签
+  transactions Transaction[] // 用户的记账信息
+}
+
+model Tag {
+  id           String        @id @default(uuid())
+  name         String
+  icon         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userId       String // 对应用户的 ID
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[] // 标签下的记账信息
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model Transaction {
+  id        String          @id @default(uuid())
+  amount    Float // 记账金额，可以为正数（收入）或负数（支出）
+  type      TransactionType // 记账类型，例如："income"（收入）或 "expense"（支出）
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  tagId     String // 对应标签的 ID
+  tag       Tag             @relation(fields: [tagId], references: [id])
+  userId    String // 对应用户的 ID
+  user      User            @relation(fields: [userId], references: [id])
+}
