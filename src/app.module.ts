@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, Logger } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -11,6 +11,7 @@ import LoggerMiddleware from './common/middleware/logger.middleware';
 import { AuthGuard } from './common/guard/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
+import { ThrottlerBehindProxyGuard } from '@/common/guard/throttler-behind-proxy.guard';
 
 @Module({
   imports: [
@@ -31,10 +32,12 @@ import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
       secret: process.env.JWT_ACCESS_SECRET,
       signOptions: { expiresIn: '2days' },
     }),
-    // 是一分钟内一个ip只能对一个接口请求十次
+    // 是一分钟内一个ip只能对一个接口请求100次
+    // @SkipThrottle() 取消对某个路由的节流限制
+    // @Throttle() 覆盖默认配置
     ThrottlerModule.forRoot({
       ttl: 60,
-      limit: 10,
+      limit: 3,
     }),
     // 如需使用redis https://docs.nestjs.com/techniques/caching#different-stores
     CacheModule.register({ max: 100, isGlobal: true }),
@@ -53,7 +56,7 @@ import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
     // 请求守卫
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ThrottlerBehindProxyGuard,
     },
     // 缓存拦截器
     {
