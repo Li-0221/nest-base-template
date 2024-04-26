@@ -32,13 +32,14 @@ import { ThrottlerBehindProxyGuard } from '@/common/guard/throttler-behind-proxy
       secret: process.env.JWT_ACCESS_SECRET,
       signOptions: { expiresIn: '2days' },
     }),
-    // 是一分钟内一个ip只能对一个接口请求100次
     // @SkipThrottle() 取消对某个路由的节流限制
     // @Throttle() 覆盖默认配置
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 3,
-    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     // 如需使用redis https://docs.nestjs.com/techniques/caching#different-stores
     CacheModule.register({ max: 100, isGlobal: true }),
 
