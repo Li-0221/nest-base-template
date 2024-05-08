@@ -38,6 +38,7 @@ export class TransactionController {
 
   @Post('list')
   @ApiOperation({ summary: '记账列表（标签查询、分页查询、时间查询）' })
+  @ApiOkResponse({ type: [TransactionDto] })
   findAll(@User() user: User, @Body() listTransactionDto: ListTransactionDto) {
     return this.transactionService.findList(user.id, listTransactionDto);
   }
