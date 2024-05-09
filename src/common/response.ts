@@ -16,7 +16,6 @@ class Response<T = any> implements NestInterceptor {
         return {
           data,
           code: 200,
-          success: true,
         };
       }),
     );

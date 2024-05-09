@@ -22,7 +22,6 @@ class HttpFilter implements ExceptionFilter {
     response.status(code).json({
       data,
       code,
-      success: false,
       path: request.url,
     });
   }
