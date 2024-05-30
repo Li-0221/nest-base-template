@@ -10,47 +10,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  USER
+enum UserRole {
+  NORMAL_USER
+  VIP_USER
+}
+
+enum UserStatus {
+  Normal
+  Disabled
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  name     String
+  phone    String @unique
+  password String
 }
 
 model User {
-  id           String        @id @default(uuid())
-  name         String
-  email        String        @unique
-  role         Role          @default(USER)
-  password     String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  tags         Tag[] // 用户拥有的标签
-  transactions Transaction[] // 用户的记账信息
+  id          String     @id @default(uuid())
+  name        String
+  phone       String     @unique
+  password    String
+  role        UserRole   @default(NORMAL_USER)
+  loginCount  Int        @default(0) //登陆的天数  不是登陆的次数
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  lastLoginAt DateTime?
+  token       String?    @db.LongText //拿来判断是否异地登录 因为每次登录生成的token不一样
+  status      UserStatus @default(Normal)
+  Finance     Finance? //一个人最多只有一笔金额订单 注意关系
 }
 
-model Tag {
-  id           String        @id @default(uuid())
-  name         String
-  icon         String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  userId       String // 对应用户的 ID
-  user         User          @relation(fields: [userId], references: [id])
-  transactions Transaction[] // 标签下的记账信息
+model Finance {
+  id        String   @id @default(uuid())
+  amount    Float
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id]) //一个人最多只有一笔金额订单 注意关系
+  userId    String   @unique()
 }
 
-enum TransactionType {
-  INCOME
-  EXPENSE
+model Software {
+  id             String       @id @default(uuid())
+  title          String
+  image          String       @db.LongText
+  desc           String
+  url            String
+  detail         String       @db.LongText
+  SoftwareType   SoftwareType @relation(fields: [softwareTypeId], references: [id])
+  softwareTypeId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
-model Transaction {
-  id        String          @id @default(uuid())
-  amount    Float // 记账金额，可以为正数（收入）或负数（支出）
-  type      TransactionType // 记账类型，例如："income"（收入）或 "expense"（支出）
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  tagId     String // 对应标签的 ID
-  tag       Tag             @relation(fields: [tagId], references: [id])
-  userId    String // 对应用户的 ID
-  user      User            @relation(fields: [userId], references: [id])
+model SoftwareType {
+  id        String     @id @default(uuid())
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  SoftWare  Software[]
+}
+
+model Record {
+  id        String   @id @default(uuid())
+  time      DateTime
+  detail    String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

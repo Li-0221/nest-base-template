@@ -1,16 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-//更多验证规则查看文档
-import { IsString, Length, IsEmail } from 'class-validator';
+import { IsString, Length, IsPhoneNumber } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
-  @Length(2, 5)
-  @ApiProperty({ description: '姓名(2-5位)' })
+  @Length(1, 8)
+  @ApiProperty({ description: '姓名(1-8位)' })
   name: string;
 
-  @IsEmail()
-  @ApiProperty({ description: '邮箱' })
-  email: string;
+  @IsPhoneNumber('CN')
+  @ApiProperty({ description: '手机号' })
+  phone: string;
 
   @IsString()
   @Length(6, 12)
