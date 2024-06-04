@@ -44,7 +44,6 @@ async function bootstrap() {
   // 前端需设置路由为hash模式（history需要额外配置），前端接口的baseURl设置为 /
   // 部署时最好把整个nest项目放到服务器上，因为他会引用public下的静态资源
   // 如果设置了prefix 前端打包的base也要设置为'/app'
-  //TODO  部署的时候直接用nginx指向这个public/dist目录 应该可以直接访问吧？？
   app.useStaticAssets(join(__dirname, '..', 'public/dist'), {
     prefix: '/app',
   });
