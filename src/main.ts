@@ -9,7 +9,14 @@ import compression from 'compression';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { join } from 'path';
 import express from 'express';
+import * as dotenv from 'dotenv';
 // import helmet from 'helmet';
+
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.development' });
+} else {
+  dotenv.config({ path: '.env.production' });
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -73,6 +80,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
+  console.log(process.env.TEXT);
   console.log('\x1b[32m%s\x1b[0m', `文档地址： http://localhost:${port}/api`);
 }
 
