@@ -10,6 +10,7 @@ import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { join } from 'path';
 import express from 'express';
 import * as dotenv from 'dotenv';
+import chalk from 'chalk';
 // import helmet from 'helmet';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -80,8 +81,8 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  console.log(process.env.TEXT);
-  console.log('\x1b[32m%s\x1b[0m', `文档地址： http://localhost:${port}/api`);
+  console.log(chalk.green(process.env.TEXT));
+  console.log(chalk.green(`文档地址： http://localhost:${port}/api`));
 }
 
 bootstrap();

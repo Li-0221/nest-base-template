@@ -99,8 +99,6 @@ export class FinanceService {
         list.push({ month: date.format('YYYY-MM'), amount });
       }
     }
-    console.log(list);
-
     return list;
   }
 }
