@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { File } from 'buffer';
 import { createReadStream, createWriteStream } from 'fs';
 import path from 'path';
 
@@ -25,5 +24,18 @@ export class FileService {
     } catch (error) {
       return { responseCode: 500, message: '文件存储错误' };
     }
+  }
+
+  async largeUpload(file: Express.Multer.File) {
+    if (!file) {
+      throw new Error('No file uploaded');
+      return { responseCode: 500, message: '文件存储错误' };
+    }
+    console.log(file);
+    return 1;
+    // return {
+    //   originalname: file.originalname,
+    //   filename: file.filename,
+    // };
   }
 }
