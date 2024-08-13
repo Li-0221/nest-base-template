@@ -30,7 +30,8 @@ export class FileController {
 
   @Post('upload')
   @ApiOperation({ summary: '上传文件' })
-  @ApiBody({ description: '上传的文件和文件名', type: FileDto })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ description: '上传的文件', type: FileDto })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({

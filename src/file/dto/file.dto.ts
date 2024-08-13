@@ -4,7 +4,7 @@ export class FileDto {
   @ApiProperty({
     type: 'string',
     format: 'binary',
-    description: '切片',
+    description: '文件',
   })
   file: Blob;
 }
