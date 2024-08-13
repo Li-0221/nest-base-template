@@ -1,33 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Software } from '@prisma/client';
-import { IsString, IsUUID } from 'class-validator';
+import { IsUUID } from 'class-validator';
+import { CreateSoftwareDto } from './create-software.dto';
 
-export class UpdateSoftwareDto {
+export class UpdateSoftwareDto extends CreateSoftwareDto {
   @IsUUID()
   @ApiProperty({ description: 'id' })
   id: string;
-
-  @IsString()
-  @ApiProperty({ description: '标题' })
-  title: string;
-
-  @IsString()
-  @ApiProperty({ description: 'url' })
-  url: string;
-
-  @IsString()
-  @ApiProperty({ description: '简介' })
-  desc: string;
-
-  @IsString()
-  @ApiProperty({ description: '图片' })
-  image: string;
-
-  @IsUUID()
-  @ApiProperty({ description: '类型id' })
-  softwareTypeId: string;
-
-  @IsString()
-  @ApiProperty({ description: '详情' })
-  detail: string;
 }

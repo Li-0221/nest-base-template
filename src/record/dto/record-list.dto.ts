@@ -14,22 +14,22 @@ export class RecordListDto extends PaginationDto {
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsString({ each: true })
-  @ApiProperty({ description: '时间' })
-  time: string;
+  @ApiProperty({ description: '时间', required: false })
+  time?: string;
 
   @IsOptional()
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsString({ each: true })
-  @ApiProperty({ description: '更新时间' })
-  updatedAt: string[];
+  @ApiProperty({ description: '更新时间', required: false })
+  updatedAt?: string[];
 
   @IsOptional()
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsString({ each: true })
-  @ApiProperty({ description: '创建时间' })
-  createdAt: string[];
+  @ApiProperty({ description: '创建时间', required: false })
+  createdAt?: string[];
 }

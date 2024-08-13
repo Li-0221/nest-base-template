@@ -1,16 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsUUID } from 'class-validator';
+import { IsUUID } from 'class-validator';
+import { CreateRecordDto } from './create-log.dto';
 
-export class UpdateRecordDto {
+export class UpdateRecordDto extends CreateRecordDto {
   @IsUUID()
   @ApiProperty({ description: 'id' })
   id: string;
-
-  @IsString()
-  @ApiProperty({ description: '时间' })
-  time: Date;
-
-  @IsString()
-  @ApiProperty({ description: '详情' })
-  detail: string;
 }

@@ -1,12 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsUUID } from 'class-validator';
+import { IsUUID } from 'class-validator';
+import { CreateSoftwareTypeDto } from './create-software-type.dto';
 
-export class UpdateSoftwareTypeDto {
+export class UpdateSoftwareTypeDto extends CreateSoftwareTypeDto {
   @IsUUID()
   @ApiProperty({ description: 'id' })
   id: string;
-
-  @IsString()
-  @ApiProperty({ description: '名称' })
-  name: string;
 }

@@ -1,12 +1,11 @@
 import { Injectable, Inject } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserLoginDto } from './dto/user-login.dto';
 import { PrismaService } from 'nestjs-prisma';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { JwtService } from '@nestjs/jwt';
-import { AdminLoginDto } from '@/auth/dto/admin-login.dto';
+import { LoginDto } from '@/auth/dto/login.dto';
 import { UserResetDto } from './dto/user-reset.dto';
 
 @Injectable()
@@ -17,7 +16,7 @@ export class AuthService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
-  async adminLogin({ phone, password }: AdminLoginDto) {
+  async adminLogin({ phone, password }: LoginDto) {
     const user = await this.prisma.admin.findUnique({ where: { phone } });
     if (!user) return { responseCode: 500, message: '用户不存在' };
     if (bcrypt.compareSync(password, user.password)) {
@@ -31,7 +30,6 @@ export class AuthService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    // TODO 短信验证
     const user = await this.prisma.user.findUnique({
       where: { phone: createUserDto.phone },
     });
@@ -44,7 +42,6 @@ export class AuthService {
   }
 
   async resetPwd(userResetDto: UserResetDto) {
-    // TODO 短信验证
     const { phone, password } = userResetDto;
     const user = await this.prisma.user.findUnique({
       where: { phone },
@@ -60,7 +57,7 @@ export class AuthService {
     }
   }
 
-  async login({ phone, password }: UserLoginDto) {
+  async login({ phone, password }: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { phone } });
     if (!user) return { responseCode: 500, message: '用户不存在' };
     if (user.status === 'Disabled')

@@ -1,11 +1,10 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserLoginDto } from './dto/user-login.dto';
+import { LoginDto } from './dto/login.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '@/common/decorator/auth.decorator';
 import { UserDto } from '@/user/dto/user.dto';
-import { AdminLoginDto } from '@/auth/dto/admin-login.dto';
 import { UserResetDto } from './dto/user-reset.dto';
 import { Throttle } from '@nestjs/throttler';
 
@@ -17,7 +16,7 @@ export class AuthController {
 
   @Post('admin')
   @ApiOperation({ summary: '管理员登录' })
-  adminLogin(@Body() adminLoginDto: AdminLoginDto) {
+  adminLogin(@Body() adminLoginDto: LoginDto) {
     return this.authService.adminLogin(adminLoginDto);
   }
 
@@ -30,7 +29,7 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: '用户登录' })
   @ApiOkResponse({ type: UserDto })
-  login(@Body() userLoginDto: UserLoginDto) {
+  login(@Body() userLoginDto: LoginDto) {
     return this.authService.login(userLoginDto);
   }
 

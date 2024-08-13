@@ -10,18 +10,20 @@ import {
 
 export class FinanceListDto extends PaginationDto {
   @IsString()
-  @ApiProperty({ description: '用户名' })
-  name: string;
+  @IsOptional()
+  @ApiProperty({ description: '用户名', required: false })
+  name?: string;
 
   @IsString()
-  @ApiProperty({ description: '电话' })
-  phone: string;
+  @IsOptional()
+  @ApiProperty({ description: '电话', required: false })
+  phone?: string;
 
   @IsArray()
   @IsOptional()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsString({ each: true })
-  @ApiProperty({ description: '创建时间' })
+  @ApiProperty({ description: '创建时间', required: false })
   createdAt?: string[];
 }
