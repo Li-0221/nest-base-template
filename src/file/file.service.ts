@@ -1,41 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { createReadStream, createWriteStream } from 'fs';
-import path from 'path';
+import fs from 'fs';
 
 @Injectable()
 export class FileService {
   constructor() {}
 
-  async upload(file: any) {
-    if (!file) throw new Error('No file uploaded');
-    try {
-      const { buffer, originalname } = file;
-      // 生成要保存的文件路径
-      const filePath = path.join(
-        __dirname,
-        '../../',
-        'publicFile',
-        originalname,
-      );
-      const writeStream = createWriteStream(filePath);
-      writeStream.write(buffer);
+  async largeUpload(file: Express.Multer.File, name: string) {
+    const fileName = name.match(/(.+)\-\d+$/)[1];
+    const chunkDir = 'publicFile/chunks_' + fileName;
 
-      return `publicFile/${originalname}`;
-    } catch (error) {
-      return { responseCode: 500, message: '文件存储错误' };
+    if (!fs.existsSync(chunkDir)) {
+      fs.mkdirSync(chunkDir);
     }
+
+    fs.cpSync(file.path, chunkDir + '/' + name);
+    fs.rmSync(file.path);
+
+    return `切片 ${name} 上传成功`;
   }
 
-  async largeUpload(file: Express.Multer.File) {
-    if (!file) {
-      throw new Error('No file uploaded');
-      return { responseCode: 500, message: '文件存储错误' };
-    }
-    console.log(file);
-    return 1;
-    // return {
-    //   originalname: file.originalname,
-    //   filename: file.filename,
-    // };
+  async merge(name: string) {
+    const chunkDir = 'publicFile/chunks_' + name;
+
+    const files = fs.readdirSync(chunkDir);
+
+    let startPos = 0;
+    let count = 0;
+    files.map((file) => {
+      const filePath = chunkDir + '/' + file;
+      const stream = fs.createReadStream(filePath);
+      stream
+        .pipe(
+          fs.createWriteStream('publicFile/' + name, {
+            start: startPos,
+          }),
+        )
+        .on('finish', () => {
+          count++;
+          if (count === files.length) {
+            fs.rm(chunkDir, { recursive: true }, () => {});
+          }
+        });
+      startPos += fs.statSync(filePath).size;
+    });
+    return `publicFile/${name}`;
   }
 }
