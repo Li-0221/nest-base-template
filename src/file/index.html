@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -28,8 +28,8 @@
         type="primary"
         @click="merge"
         :disabled="!fileName"
-        >合并文件</el-button
-      >
+        >合并文件
+      </el-button>
     </div>
   </body>
   <!-- import Vue before Element -->
@@ -39,10 +39,10 @@
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
     new Vue({
-      el: "#app",
+      el: '#app',
       data() {
         return {
-          fileName: ""
+          fileName: '',
         };
       },
       methods: {
@@ -54,6 +54,7 @@
           }
           return result;
         },
+
         async httpRequest({ file }) {
           const chunks = this.createChunks(file, 0.5 * 1024 * 1024); // 切片0.5M
 
@@ -62,21 +63,22 @@
 
           for (let i = 0; i < chunks.length; i++) {
             const formData = new FormData();
-            formData.append("file", chunks[i]);
-            formData.append("name", `${this.fileName}-${i}`);
+            formData.append('file', chunks[i]);
+            formData.append('name', `${this.fileName}-${i}`);
 
             await axios.post(
-              "http://localhost:5600/file/large-upload",
-              formData
+              'http://localhost:5600/file/large-upload',
+              formData,
             );
           }
         },
+
         async merge() {
           await axios.get(
-            `http://localhost:5600/file/merge?name=${this.fileName}`
+            `http://localhost:5600/file/merge?name=${this.fileName}`,
           );
-        }
-      }
+        },
+      },
     });
   </script>
 </html>
