@@ -19,7 +19,7 @@ const logger = createLogger({
     format.timestamp(),
     format.printf(({ timestamp, level, message }) => {
       const time = dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss');
-      return `${level==='info'?'\n':''}${time} [${level}]: ${message}`;
+      return `${level === 'info' ? '\n' : ''}${time} [${level}]: ${message}`;
     }),
   ),
 });

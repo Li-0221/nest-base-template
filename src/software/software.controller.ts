@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Body,
-  Post,
-  Delete,
-  Query,
-  Param,
-  Get,
-} from '@nestjs/common';
+import { Controller, Body, Post, Delete, Param, Get } from '@nestjs/common';
 import { SoftwareService } from './software.service';
 import { UpdateSoftwareDto } from './dto/update-software.dto';
 import {
