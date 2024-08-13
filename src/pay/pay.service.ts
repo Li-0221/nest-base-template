@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import md5 from 'md5';
 import axios from 'axios';
@@ -48,7 +48,7 @@ export class PayService {
       return data;
     } catch (error) {
       console.log(error);
-      return { responseCode: 500, message: '支付链接获取失败' };
+      throw new InternalServerErrorException('支付链接获取失败');
     }
   }
 
@@ -83,8 +83,8 @@ export class PayService {
   async usernotify(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id: id } });
     if (user.role === 'VIP_USER') {
-      return { responseCode: 200, message: '支付成功' };
+      return '支付成功';
     }
-    return { responseCode: 500, message: '还未支付' };
+    throw new InternalServerErrorException('还未支付');
   }
 }

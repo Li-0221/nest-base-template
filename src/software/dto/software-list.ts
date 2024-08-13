@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 
 export class SoftwareListDto extends PaginationDto {
-  @IsOptional() //可选字段
+  @IsOptional()
   @IsString()
   @ApiProperty({ description: '标题', required: false })
   title?: string;

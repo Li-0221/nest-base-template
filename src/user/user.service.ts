@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { UserListDto } from './dto/user-list.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -80,7 +80,7 @@ export class UserService {
         where: { id },
       });
     if (token && token !== currentToken) {
-      return { responseCode: 401, message: '账号已在别处登陆' };
+      throw new UnauthorizedException('账号已在别处登陆');
     }
     if (dayjs().isSame(lastLoginAt, 'day')) {
       return '今天已经登录过，本次登录不计次数';

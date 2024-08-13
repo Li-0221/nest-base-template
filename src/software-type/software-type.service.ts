@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateSoftwareTypeDto } from './dto/create-software-type.dto';
 import { PrismaService } from 'nestjs-prisma';
 import { UpdateSoftwareTypeDto } from './dto/update-software-type.dto';
@@ -34,10 +34,9 @@ export class SoftwareTypeService {
     });
 
     if (count) {
-      return {
-        responseCode: 500,
-        message: `当前类别下有 ${count} 个软件，无法删除`,
-      };
+      throw new InternalServerErrorException(
+        `当前类别下有 ${count} 个软件，无法删除`,
+      );
     }
     await this.prisma.softwareType.delete({ where: { id } });
     return '删除成功';

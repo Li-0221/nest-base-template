@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Param, Delete } from '@nestjs/common';
 import { SoftwareTypeService } from './software-type.service';
 import { CreateSoftwareTypeDto } from './dto/create-software-type.dto';
 import { SoftWareTypeDto } from './dto/software-type.dto';
