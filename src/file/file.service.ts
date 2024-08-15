@@ -1,5 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import fs from 'fs';
+import {
+  rm,
+  rmSync,
+  cpSync,
+  statSync,
+  mkdirSync,
+  existsSync,
+  readdirSync,
+  createReadStream,
+  createWriteStream,
+} from 'fs';
 
 @Injectable()
 export class FileService {
@@ -9,12 +19,12 @@ export class FileService {
     const fileName = name.match(/(.+)\-\d+$/)[1];
     const chunkDir = 'publicFile/chunks_' + fileName;
 
-    if (!fs.existsSync(chunkDir)) {
-      fs.mkdirSync(chunkDir);
+    if (!existsSync(chunkDir)) {
+      mkdirSync(chunkDir);
     }
 
-    fs.cpSync(file.path, chunkDir + '/' + name);
-    fs.rmSync(file.path);
+    cpSync(file.path, chunkDir + '/' + name);
+    rmSync(file.path);
 
     return `切片 ${name} 上传成功`;
   }
@@ -22,26 +32,26 @@ export class FileService {
   async merge(name: string) {
     const chunkDir = 'publicFile/chunks_' + name;
 
-    const files = fs.readdirSync(chunkDir);
+    const files = readdirSync(chunkDir);
 
     let startPos = 0;
     let count = 0;
     files.map((file) => {
       const filePath = chunkDir + '/' + file;
-      const stream = fs.createReadStream(filePath);
+      const stream = createReadStream(filePath);
       stream
         .pipe(
-          fs.createWriteStream('publicFile/' + name, {
+          createWriteStream('publicFile/' + name, {
             start: startPos,
           }),
         )
         .on('finish', () => {
           count++;
           if (count === files.length) {
-            fs.rm(chunkDir, { recursive: true }, () => {});
+            rm(chunkDir, { recursive: true }, () => {});
           }
         });
-      startPos += fs.statSync(filePath).size;
+      startPos += statSync(filePath).size;
     });
     return `publicFile/${name}`;
   }
