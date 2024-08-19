@@ -32,7 +32,11 @@ export class FileService {
   async merge(name: string) {
     const chunkDir = 'publicFile/chunks_' + name;
 
-    const files = readdirSync(chunkDir);
+    const files = readdirSync(chunkDir).sort((a, b) => {
+      const numA = parseInt(a.split('-').pop(), 10);
+      const numB = parseInt(b.split('-').pop(), 10);
+      return numA - numB;
+    });
 
     let startPos = 0;
     let count = 0;
