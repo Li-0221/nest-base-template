@@ -33,7 +33,6 @@ export default [
 
       parserOptions: {
         project: 'tsconfig.json',
-        tsconfigRootDir: '/Users/zhongxing/person/nest-base-template',
       },
     },
 
