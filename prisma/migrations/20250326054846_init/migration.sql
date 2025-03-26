@@ -20,6 +20,7 @@ CREATE TABLE `User` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `lastLoginAt` DATETIME(3) NULL,
+    `token` LONGTEXT NULL,
     `status` ENUM('Normal', 'Disabled') NOT NULL DEFAULT 'Normal',
 
     UNIQUE INDEX `User_phone_key`(`phone`),

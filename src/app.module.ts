@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, Logger } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
@@ -17,6 +18,7 @@ import { SoftwareModule } from './software/software.module';
 import { FileModule } from './file/file.module';
 import { RecordModule } from './record/record.module';
 import { PayModule } from './pay/pay.module';
+import config from './common/configs/config';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { PayModule } from './pay/pay.module';
     ]),
     // 如需使用redis https://docs.nestjs.com/techniques/caching#different-stores
     CacheModule.register({ max: 100, isGlobal: true }),
+
+    ConfigModule.forRoot({ isGlobal: true, load: [config] }),
 
     AuthModule,
     UserModule,

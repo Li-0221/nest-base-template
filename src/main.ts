@@ -3,24 +3,31 @@ import { AppModule } from './app.module';
 import Response from './common/response';
 import HttpFilter from './common/http-filter';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { join } from 'path';
 import express from 'express';
-import * as dotenv from 'dotenv';
 import chalk from 'chalk';
+import {
+  CorsConfig,
+  NestConfig,
+  SwaggerConfig,
+} from './common/configs/config.interface';
 // import helmet from 'helmet';
+import { config } from 'dotenv';
 
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.config({ path: '.env.development' });
-} else {
-  dotenv.config({ path: '.env.production' });
-}
+config({ path: `.env.${process.env.NODE_ENV}` });
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const configService = app.get(ConfigService);
+  const nestConfig = configService.get<NestConfig>('nest');
+  const corsConfig = configService.get<CorsConfig>('cors');
+  const swaggerConfig = configService.get<SwaggerConfig>('swagger');
 
   //TODO 正式上线打开 helmet 通过适当设置 HTTP 标头来帮助保护应用免受一些众所周知的 Web 漏洞的影响
   // app.use(helmet());
@@ -67,22 +74,27 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   // cors
-  app.enableCors();
+  if (corsConfig.enabled) app.enableCors();
 
-  const options = new DocumentBuilder()
-    .addBearerAuth()
-    .setTitle('Title')
-    .setVersion('1.0')
-    .setDescription('The nestjs API description')
-    .build();
-  const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('/api', app, document);
+  const port = nestConfig.port || process.env.PORT || 3000;
 
-  const port = process.env.PORT || 3000;
+  if (swaggerConfig.enabled) {
+    const options = new DocumentBuilder()
+      .addBearerAuth()
+      .setTitle(swaggerConfig.title)
+      .setVersion(swaggerConfig.version)
+      .setDescription(swaggerConfig.description)
+      .build();
+    const document = SwaggerModule.createDocument(app, options);
+    SwaggerModule.setup(swaggerConfig.path, app, document);
+  }
+
   await app.listen(port);
 
-  console.log(chalk.green(process.env.TEXT));
-  console.log(chalk.green(`文档地址： http://localhost:${port}/api`));
+  if (swaggerConfig.enabled)
+    console.log(
+      chalk.green(`文档地址： http://localhost:${port}/${swaggerConfig.path}`),
+    );
 }
 
 bootstrap();

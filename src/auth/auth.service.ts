@@ -12,16 +12,21 @@ import { Cache } from 'cache-manager';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from '@/auth/dto/login.dto';
 import { UserResetDto } from './dto/user-reset.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private jwtService: JwtService,
+    private configService: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   async adminLogin({ phone, password }: LoginDto) {
+    console.log('====');
+    console.log(this.configService.get<string>('NAME'));
+
     const user = await this.prisma.admin.findUnique({ where: { phone } });
     if (!user) throw new InternalServerErrorException('用户不存在');
 
