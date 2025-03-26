@@ -91,9 +91,11 @@ async function bootstrap() {
 
   await app.listen(port);
 
+  console.log(chalk.green(`当前环境：${process.env.NAME}`));
+
   if (swaggerConfig.enabled)
     console.log(
-      chalk.green(`文档地址： http://localhost:${port}/${swaggerConfig.path}`),
+      chalk.green(`文档地址：http://localhost:${port}/${swaggerConfig.path}`),
     );
 }
 
