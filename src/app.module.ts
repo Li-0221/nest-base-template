@@ -50,6 +50,7 @@ import config from './common/configs/config';
     // 如需使用redis https://docs.nestjs.com/techniques/caching#different-stores
     CacheModule.register({ max: 100, isGlobal: true }),
 
+    // 获取env.*文件里的配置可以通过 process.env.xxx 或者 this.configService.get('xxx')
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
 
     AuthModule,
