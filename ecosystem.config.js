@@ -4,7 +4,7 @@ module.exports = {
       name: 'nestjs-prisma-app',
       script: 'dist/main.js',
       instances: 'max',
-      autorestart: true,
+      autorestart: true, // 自动重启
       watch: false,
       max_memory_restart: '1G',
       env: {
