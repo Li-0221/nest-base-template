@@ -97,8 +97,6 @@ async function bootstrap() {
     console.log(
       chalk.green(`文档地址：http://localhost:${port}/${swaggerConfig.path}`),
     );
-
-  console.log(process.env.NODE_ENV);
 }
 
 bootstrap();
