@@ -1,8 +1,10 @@
 module.exports = {
   apps: [
     {
-      name: 'nestjs-prisma-app',
+      name: 'server-name',
       script: 'dist/main.js',
+      // 所以会运行多次main.js
+      // 把 instances 设置为 max，PM2 会依据服务器的 CPU 核心数量来创建多个应用实例，每个实例可以在不同的 CPU 核心上运行，从而充分利用服务器的多核处理能力，提升应用的整体性能和吞吐量。
       instances: 'max',
       autorestart: true, // 自动重启
       watch: false,
