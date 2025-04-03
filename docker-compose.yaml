@@ -1,99 +1,156 @@
-# docker-compose示例
+# 此文件用于定义 Docker 服务、网络和卷，以实现多容器应用的编排
+# 通过 docker-compose 工具可以方便地启动、停止和管理这些容器
 
+# services 部分定义了应用所包含的各个服务
 services:
+  # 前端服务，用于提供用户界面
   frontend:
+    # build 部分指定如何构建前端服务的镜像
     build:
+      # context 指定构建镜像时的上下文目录，即 Dockerfile 所在的目录
       context: frontend/
+    # 可以使用预构建的镜像，这里注释掉了，可根据需要取消注释使用
     # image: soybean-admin-frontend:1.2.7
+    # environment 部分设置容器运行时的环境变量
     environment:
+      # 设置时区为亚洲/上海
       TZ: Asia/Shanghai
+    # depends_on 部分定义服务之间的依赖关系
     depends_on:
+      # 前端服务依赖于后端服务，并且只有当后端服务处于健康状态时才会启动
       backend:
         condition: service_healthy
+    # ports 部分将容器内部的端口映射到宿主机的端口
     ports:
       - '9527:80'
+    # networks 部分指定服务所属的网络
     networks:
       - soybean-admin
 
+  # 后端服务，处理业务逻辑和与数据库交互
   backend:
+    # build 部分指定如何构建后端服务的镜像
     build:
+      # context 指定构建镜像时的上下文目录，即 Dockerfile 所在的目录
       context: backend/
+    # 可以使用预构建的镜像，这里注释掉了，可根据需要取消注释使用
     # image: soybean-admin-backend:0.0.1
-    # 这里的环境变量会覆盖env文件中的同名变量
+    # 这里的环境变量会覆盖.env 文件中的同名变量
     environment:
+      # 设置时区为亚洲/上海
       TZ: Asia/Shanghai
-      CASBIN_MODEL: 'model.conf'
+      # 设置 Node.js 运行环境为生产环境
       NODE_ENV: production
+      # 设置后端服务监听的端口
       APP_PORT: 9528
-      DOC_SWAGGER_ENABLE: 'true'
-      DOC_SWAGGER_PATH: 'api-docs'
+      # 设置数据库连接的 URL，指定了数据库的用户名、密码、主机、端口、数据库名和模式
       DATABASE_URL: 'postgresql://soybean:soybean@123.@postgres:5432/soybean-admin-nest-backend?schema=public'
-      REDIS_HOST: 'redis'
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: '123456'
-      REDIS_DB: 1
-      JWT_SECRET: 'JWT_SECRET-soybean-admin-nest@123456!@#.'
-      JWT_EXPIRE_IN: 3600
-      REFRESH_TOKEN_SECRET: 'REFRESH_TOKEN_EXPIRE_IN-soybean-admin-nest@123456!@#.'
-      REFRESH_TOKEN_EXPIRE_IN: 7200
+    # depends_on 部分定义服务之间的依赖关系
     depends_on:
+      # 后端服务依赖于 PostgreSQL 数据库服务，并且只有当数据库服务处于健康状态时才会启动
       postgres:
         condition: service_healthy
+      # 后端服务依赖于 Redis 服务，并且只有当 Redis 服务处于健康状态时才会启动
       redis:
         condition: service_healthy
+    # ports 部分将容器内部的端口映射到宿主机的端口
     ports:
       - '9528:9528'
+    # networks 部分指定服务所属的网络
     networks:
       - soybean-admin
+    # healthcheck 部分定义了如何检查服务的健康状态
     healthcheck:
+      # test 指定了用于检查健康状态的命令
       test:
         ['CMD', 'curl', '-f', 'http://backend:9528/v1/route/getConstantRoutes']
+      # interval 指定检查的时间间隔
       interval: 10s
+      # timeout 指定命令执行的超时时间
       timeout: 5s
+      # retries 指定重试次数
       retries: 5
+      # start_period 指定服务启动后的初始时间内不进行健康检查
       start_period: 60s
+    # cpus 指定容器可以使用的 CPU 核心数
     cpus: 2
 
+  # PostgreSQL 数据库服务
   postgres:
+    # image 指定使用的 Docker 镜像
     image: postgres:16.3
+    # environment 部分设置容器运行时的环境变量
     environment:
+      # 设置时区为亚洲/上海
       TZ: Asia/Shanghai
+      # 设置 PostgreSQL 数据库的密码
       POSTGRES_PASSWORD: soybean@123.
+      # 设置 PostgreSQL 数据库的用户名
       POSTGRES_USER: soybean
+      # 设置 PostgreSQL 数据库的名称
       POSTGRES_DB: soybean-admin-nest-backend
+    # ports 部分将容器内部的端口映射到宿主机的端口
     ports:
       - '25432:5432'
+    # volumes 部分定义了容器与宿主机之间的数据卷映射
     volumes:
+      # 将名为 soybean-admin-postgres_data 的数据卷挂载到容器内的 /usr/share/docker/postgresql 目录
       - soybean-admin-postgres_data:/usr/share/docker/postgresql
+      # 将宿主机的 ./deploy/postgres 目录挂载到容器内的 /docker-entrypoint-initdb.d 目录，用于初始化数据库
       - ./deploy/postgres:/docker-entrypoint-initdb.d
+    # networks 部分指定服务所属的网络
     networks:
       - soybean-admin
+    # healthcheck 部分定义了如何检查服务的健康状态
     healthcheck:
+      # test 指定了用于检查健康状态的命令
       test: ['CMD-SHELL', 'pg_isready -U soybean -d soybean-admin-nest-backend']
+      # interval 指定检查的时间间隔
       interval: 10s
+      # timeout 指定命令执行的超时时间
       timeout: 5s
+      # retries 指定重试次数
       retries: 5
 
+  # Redis 服务，用于缓存和会话管理
   redis:
+    # image 指定使用的 Docker 镜像
     image: redis/redis-stack:7.2.0-v11
+    # environment 部分设置容器运行时的环境变量
     environment:
+      # 设置时区为亚洲/上海
       TZ: Asia/Shanghai
+    # command 指定容器启动时执行的命令，这里设置了 Redis 的密码
     command: redis-server --requirepass 123456
+    # ports 部分将容器内部的端口映射到宿主机的端口
     ports:
       - '26379:6379'
+    # volumes 部分定义了容器与宿主机之间的数据卷映射
     volumes:
+      # 将名为 soybean-admin-redis_data 的数据卷挂载到容器内的 /data 目录
       - soybean-admin-redis_data:/data
+    # networks 部分指定服务所属的网络
     networks:
       - soybean-admin
+    # healthcheck 部分定义了如何检查服务的健康状态
     healthcheck:
+      # test 指定了用于检查健康状态的命令
       test: ['CMD', 'redis-cli', '-a', '123456', 'ping']
+      # interval 指定检查的时间间隔
       interval: 10s
+      # timeout 指定命令执行的超时时间
       timeout: 5s
+      # retries 指定重试次数
       retries: 5
 
+# volumes 部分定义了 Docker 数据卷，用于持久化存储数据
 volumes:
+  # 定义名为 soybean-admin-postgres_data 的数据卷，用于存储 PostgreSQL 数据库的数据
   soybean-admin-postgres_data:
+  # 定义名为 soybean-admin-redis_data 的数据卷，用于存储 Redis 服务的数据
   soybean-admin-redis_data:
 
+# networks 部分定义了 Docker 网络，用于容器之间的通信
 networks:
+  # 定义名为 soybean-admin 的网络
   soybean-admin:
