@@ -17,9 +17,6 @@ import {
   SwaggerConfig,
 } from './common/configs/config.interface';
 // import helmet from 'helmet';
-import { config } from 'dotenv';
-
-config({ path: `.env.${process.env.NODE_ENV}` });
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -76,7 +73,7 @@ async function bootstrap() {
   // cors
   if (corsConfig.enabled) app.enableCors();
 
-  const port = nestConfig.port || process.env.PORT || 3000;
+  const port = nestConfig.port || 3000;
 
   if (swaggerConfig.enabled) {
     const options = new DocumentBuilder()
