@@ -1,0 +1,113 @@
+services:
+  frontend:
+    build:
+      context: frontend/
+    # image: soybean-admin-frontend:1.2.7
+    environment:
+      TZ: Asia/Shanghai
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '9527:80'
+    networks:
+      - soybean-admin
+
+  backend:
+    build:
+      context: backend/
+    # image: soybean-admin-backend:0.0.1
+    environment:
+      TZ: Asia/Shanghai
+      CASBIN_MODEL: 'model.conf'
+      NODE_ENV: production
+      APP_PORT: 9528
+      DOC_SWAGGER_ENABLE: 'true'
+      DOC_SWAGGER_PATH: 'api-docs'
+      DATABASE_URL: 'postgresql://soybean:soybean@123.@postgres:5432/soybean-admin-nest-backend?schema=public'
+      REDIS_HOST: 'redis'
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: '123456'
+      REDIS_DB: 1
+      JWT_SECRET: 'JWT_SECRET-soybean-admin-nest@123456!@#.'
+      JWT_EXPIRE_IN: 3600
+      REFRESH_TOKEN_SECRET: 'REFRESH_TOKEN_EXPIRE_IN-soybean-admin-nest@123456!@#.'
+      REFRESH_TOKEN_EXPIRE_IN: 7200
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - '9528:9528'
+    networks:
+      - soybean-admin
+    healthcheck:
+      test:
+        ['CMD', 'curl', '-f', 'http://backend:9528/v1/route/getConstantRoutes']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    cpus: 2
+
+  postgres:
+    image: postgres:16.3
+    environment:
+      TZ: Asia/Shanghai
+      POSTGRES_PASSWORD: soybean@123.
+      POSTGRES_USER: soybean
+      POSTGRES_DB: soybean-admin-nest-backend
+    ports:
+      - '25432:5432'
+    volumes:
+      - soybean-admin-postgres_data:/usr/share/docker/postgresql
+      - ./deploy/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - soybean-admin
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U soybean -d soybean-admin-nest-backend']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgbouncer:
+    image: bitnami/pgbouncer:1.23.1
+    container_name: pgbouncer
+    hostname: pgbouncer
+    restart: always
+    environment:
+      - PGBOUNCER_DATABASE=*
+      - POSTGRESQL_USERNAME=soybean
+      - POSTGRESQL_PASSWORD=soybean@123.
+      - POSTGRESQL_DATABASE=soybean-admin-nest-backend
+      - POSTGRESQL_HOST=postgres
+      - POSTGRESQL_PORT=5432
+    ports:
+      - 6432:6432
+    networks:
+      - soybean-admin
+
+  redis:
+    image: redis/redis-stack:7.2.0-v11
+    environment:
+      TZ: Asia/Shanghai
+    command: redis-server --requirepass 123456
+    ports:
+      - '26379:6379'
+    volumes:
+      - soybean-admin-redis_data:/data
+    networks:
+      - soybean-admin
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '123456', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  soybean-admin-postgres_data:
+  soybean-admin-redis_data:
+
+networks:
+  soybean-admin:
