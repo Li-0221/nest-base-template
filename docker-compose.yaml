@@ -1,3 +1,5 @@
+# docker-compose示例
+
 services:
   frontend:
     build:
@@ -12,7 +14,6 @@ services:
       - '9527:80'
     networks:
       - soybean-admin
-
   backend:
     build:
       context: backend/
