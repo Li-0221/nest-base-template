@@ -19,6 +19,7 @@ services:
     build:
       context: backend/
     # image: soybean-admin-backend:0.0.1
+    # 这里的环境变量会覆盖env文件中的同名变量
     environment:
       TZ: Asia/Shanghai
       CASBIN_MODEL: 'model.conf'
