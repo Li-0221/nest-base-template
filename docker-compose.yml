@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: nest-base-db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - nestapp-network
+
+  backend:
+    build: .
+    container_name: nest-base-app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@db:5432/db?schema=public"
+      PORT: 3000
+    networks:
+      - nestapp-network
+    depends_on:
+      - db
+    command: sh -c "npx prisma migrate deploy && npm run start:prod"
+
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  nestapp-network:
+    driver: bridge

@@ -1,12 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -33,48 +30,9 @@ model User {
   phone       String     @unique
   password    String
   role        UserRole   @default(NORMAL_USER)
-  loginCount  Int        @default(0) //登陆的天数  不是登陆的次数
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   lastLoginAt DateTime?
-  token       String?    @db.LongText //拿来判断是否异地登录 因为每次登录生成的token不一样
+  token       String?
   status      UserStatus @default(Normal)
-  Finance     Finance? //一个人最多只有一笔金额订单 注意关系
-}
-
-model Finance {
-  id        String   @id @default(uuid())
-  amount    Float
-  createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id]) //一个人最多只有一笔金额订单 注意关系
-  userId    String   @unique()
-}
-
-model Software {
-  id             String       @id @default(uuid())
-  title          String
-  image          String       @db.LongText
-  desc           String
-  url            String
-  detail         String       @db.LongText
-  SoftwareType   SoftwareType @relation(fields: [softwareTypeId], references: [id])
-  softwareTypeId String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-}
-
-model SoftwareType {
-  id        String     @id @default(uuid())
-  name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  SoftWare  Software[]
-}
-
-model Record {
-  id        String   @id @default(uuid())
-  time      DateTime
-  detail    String   @db.LongText
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }

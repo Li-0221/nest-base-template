@@ -7,6 +7,7 @@ module.exports = {
       // 所以会运行多次main.js
       instances: 'max',
       autorestart: true, // 自动重启
+      exec_mode: 'cluster',
       watch: false,
       max_memory_restart: '1G',
       env: {
