@@ -9,10 +9,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://username:password@$127.0.0.1:5432/db
+      - DATABASE_URL=postgresql://username:password@127.0.0.1:5432/db
       - NODE_ENV=production
       - JWT_ACCESS_SECRET=nestjsPrismaAccessSecret
-    restart: unless-stopped  # 重启策略: 除非手动停止, 否则容器总是会重启
+    restart: unless-stopped  
 
   db:
     image: postgres:16-alpine

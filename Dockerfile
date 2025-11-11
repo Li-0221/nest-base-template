@@ -1,7 +1,9 @@
 # ---- 基础构建环境 (Stage 1: builder) ----
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
-RUN npm install -g pnpm
+RUN apk add --no-cache openssl
+
+RUN npm install -g pnpm 
 
 WORKDIR /usr/src/app
 
@@ -17,14 +19,18 @@ COPY .env ./
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
 COPY ecosystem.config.js ./
 
-RUN pnpm exec prisma generate
+RUN  pnpm prisma:generate
 
 RUN pnpm run build
 
 RUN pnpm prune --prod
 
 # ---- 生产环境镜像 (Stage 2: production) ----
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
+
+RUN npm install -g pm2 
+
+RUN apk add --no-cache openssl
 
 WORKDIR /usr/src/app
 
@@ -36,4 +42,4 @@ COPY --from=builder /usr/src/app/ecosystem.config.js ./
 
 EXPOSE 3000
 
-CMD ["pnpm", "exec", "pm2-runtime", "ecosystem.config.js"]
+CMD ["pm2-runtime", "ecosystem.config.js"]

@@ -12,12 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
 import { ThrottlerBehindProxyGuard } from '@/common/guard/throttler-behind-proxy.guard';
 import { UserModule } from './user/user.module';
-import { FinanceModule } from './finance/finance.module';
-import { SoftwareTypeModule } from './software-type/software-type.module';
-import { SoftwareModule } from './software/software.module';
 import { FileModule } from './file/file.module';
-import { RecordModule } from './record/record.module';
-import { PayModule } from './pay/pay.module';
 import config from './common/configs/config';
 
 @Module({
@@ -50,21 +45,15 @@ import config from './common/configs/config';
     // 如需使用redis https://docs.nestjs.com/techniques/caching#different-stores
     CacheModule.register({ max: 100, isGlobal: true }),
 
-    // 获取env.*文件里的配置可以通过 process.env.xxx 或者 this.configService.get('xxx')
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
+      envFilePath: '.env',
       load: [config],
     }),
 
     AuthModule,
     UserModule,
-    FinanceModule,
-    SoftwareTypeModule,
-    SoftwareModule,
-    RecordModule,
     FileModule,
-    PayModule,
   ],
   controllers: [AppController],
   providers: [
