@@ -1,41 +1,39 @@
-# ---- 基础镜像 ----
-# 使用一个包含 pnpm 的 Node.js 18 Alpine 镜像作为基础
-FROM node:18-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+# ---- 基础构建环境 (Stage 1: builder) ----
+FROM node:20-alpine AS builder
 
-# ---- 依赖阶段 ----
-FROM base AS dependencies
-WORKDIR /app
-# 仅复制 pnpm 所需的清单文件
+RUN npm install -g pnpm
+
+WORKDIR /usr/src/app
+
 COPY package.json pnpm-lock.yaml ./
-# 安装所有依赖（包括 devDependencies，因为构建和 prisma generate 需要它们）
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-# ---- 构建阶段 ----
-FROM base AS builder
-WORKDIR /app
-# 从依赖阶段复制 node_modules 和清单文件
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/package.json ./package.json
-COPY prisma ./prisma
+RUN pnpm install --frozen-lockfile
+
+COPY prisma ./prisma/
+COPY src ./src/
+COPY public ./public/
+COPY publicFile ./publicFile/
+COPY .env ./
+COPY tsconfig.json tsconfig.build.json nest-cli.json ./
+COPY ecosystem.config.js ./
+
 RUN pnpm exec prisma generate
-COPY . .
+
 RUN pnpm run build
 
-# ---- 生产阶段 ----
-FROM base AS production
-WORKDIR /app
+RUN pnpm prune --prod
 
-COPY package.json pnpm-lock.yaml ./
+# ---- 生产环境镜像 (Stage 2: production) ----
+FROM node:20-alpine AS production
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/prisma ./prisma
+WORKDIR /usr/src/app
 
-EXPOSE 8080
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/prisma ./prisma
+COPY --from=builder /usr/src/app/package.json ./package.json
+COPY --from=builder /usr/src/app/ecosystem.config.js ./
 
-CMD ["pm2-runtime", "./ecosystem.config.js"]
+EXPOSE 3000
+
+CMD ["pnpm", "exec", "pm2-runtime", "ecosystem.config.js"]

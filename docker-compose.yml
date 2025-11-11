@@ -1,40 +1,32 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: nest-base-db
-    restart: always
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: db
-    ports:
-      - "5432:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - nestapp-network
-
   backend:
     build: .
-    container_name: nest-base-app
+    container_name: nestjs_app
+    depends_on:
+      - db
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: "postgresql://user:password@db:5432/db?schema=public"
-      PORT: 3000
-    networks:
-      - nestapp-network
-    depends_on:
-      - db
-    command: sh -c "npx prisma migrate deploy && npm run start:prod"
+      - DATABASE_URL=postgresql://username:password@$127.0.0.1:5432/db
+      - NODE_ENV=production
+      - JWT_ACCESS_SECRET=nestjsPrismaAccessSecret
+    restart: unless-stopped  # 重启策略: 除非手动停止, 否则容器总是会重启
 
+  db:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=username 
+      - POSTGRES_PASSWORD=password 
+      - POSTGRES_DB=db 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
 
 volumes:
-  db-data:
+  postgres_data:
     driver: local
-
-networks:
-  nestapp-network:
-    driver: bridge
