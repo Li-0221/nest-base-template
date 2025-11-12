@@ -1,7 +1,7 @@
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import Response from "./common/response";
-import HttpFilter from "./common/http-filter";
+import HttpExceptionFilter from "./common/http-exception.filter";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
@@ -40,7 +40,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new Response());
 
   // http错误过滤
-  app.useGlobalFilters(new HttpFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Prisma Client 异常过滤
   const { httpAdapter } = app.get(HttpAdapterHost);

@@ -19,12 +19,11 @@
 //   },
 //   "code": 500,
 //   "success": false,
-//   "path": "/"
 // }
 
-import { Injectable, NestInterceptor, CallHandler } from '@nestjs/common';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Injectable, NestInterceptor, CallHandler } from "@nestjs/common";
+import { map } from "rxjs/operators";
+import { Observable } from "rxjs";
 
 interface data<T> {
   data: T;
@@ -34,13 +33,13 @@ interface data<T> {
 class Response<T = any> implements NestInterceptor {
   intercept(_, next: CallHandler): Observable<data<T>> {
     return next.handle().pipe(
-      map((data) => {
+      map(data => {
         return {
           data,
           code: 200,
-          success: true,
+          success: true
         };
-      }),
+      })
     );
   }
 }
