@@ -12,6 +12,8 @@ import { join } from "path";
 import express from "express";
 import chalk from "chalk";
 import { CorsConfig, NestConfig, SwaggerConfig, UploadConfig } from "./common/configs/config.interface";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { LoggerInterceptor } from "./common/interceptors/logger.interceptor";
 // import helmet from 'helmet';
 
 async function bootstrap() {
@@ -25,6 +27,10 @@ async function bootstrap() {
 
   //TODO 正式上线打开 helmet 通过适当设置 HTTP 标头来帮助保护应用免受一些众所周知的 Web 漏洞的影响
   // app.use(helmet());
+
+  //logger
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useGlobalInterceptors(new LoggerInterceptor());
 
   // 设置请求体大小限制为15MB
   app.use(express.json({ limit: "20mb" }));

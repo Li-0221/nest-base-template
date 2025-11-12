@@ -6,7 +6,6 @@ import { ThrottlerModule } from "@nestjs/throttler";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
-import LoggerMiddleware from "./common/middleware/logger.middleware";
 import { AuthGuard } from "./common/guard/auth.guard";
 import { JwtModule } from "@nestjs/jwt";
 import { PrismaModule, loggingMiddleware } from "nestjs-prisma";
@@ -14,9 +13,13 @@ import { ThrottlerBehindProxyGuard } from "@/common/guard/throttler-behind-proxy
 import { UserModule } from "./user/user.module";
 import { FileModule } from "./upload/upload.module";
 import config from "./common/configs/config";
+import { WinstonModule } from "nest-winston";
+import { winstonConfig } from "./common/configs/winston.config";
 
 @Module({
   imports: [
+    WinstonModule.forRoot(winstonConfig),
+
     PrismaModule.forRoot({
       isGlobal: true,
       prismaServiceOptions: {
@@ -82,8 +85,4 @@ import config from "./common/configs/config";
     AppService
   ]
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes("*");
-  }
-}
+export class AppModule {}

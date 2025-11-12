@@ -1,26 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: postgres_db
-    environment:
-      - POSTGRES_USER=username 
-      - POSTGRES_PASSWORD=password 
-      - POSTGRES_DB=dbname 
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U username -d db"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
-
   backend:
     build: .
     container_name: nestjs_app
@@ -29,18 +9,24 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://username:password@db:5432/dbname   # db 指的是容器名称 dbname是数据库名称
+      - DATABASE_URL=postgresql://username:password@127.0.0.1:5432/db
       - NODE_ENV=production
       - JWT_ACCESS_SECRET=nestjsPrismaAccessSecret
-    restart: unless-stopped
-    networks:
-      - app-network
+    restart: unless-stopped  
 
- 
+  db:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=username 
+      - POSTGRES_PASSWORD=password 
+      - POSTGRES_DB=db 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
     driver: local
-
-networks:
-  app-network:
-    driver: bridge
