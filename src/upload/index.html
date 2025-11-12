@@ -56,12 +56,20 @@
           :on-remove="handleRemove"
         >
           <el-button size="small" type="primary">大文件上传 (切片)</el-button>
+
+          <div class="el-upload__tip" slot="tip">切片大小 1M</div>
           <div class="el-upload__tip" slot="tip">(后端路径: /upload/large-upload)</div>
         </el-upload>
 
         <!-- 3. 合并按钮 -->
-        {{fileHash}}xxx {{mergedUrl}} ==={{!fileHash || mergedUrl}}
-        <el-button style="margin-top: 20px" size="small" type="success" @click="merge" :loading="mergeLoading">
+        <el-button
+          style="margin-top: 20px"
+          size="small"
+          type="success"
+          @click="merge"
+          :disabled="disabled"
+          :loading="mergeLoading"
+        >
           合并文件
         </el-button>
 
@@ -96,6 +104,12 @@
           mergeLoading: false
         };
       },
+      computed: {
+        disabled() {
+          if (this.mergedUrl) return true;
+          return !this.fileHash;
+        }
+      },
       methods: {
         // 普通上传成功回调
         handleSuccess(response, file) {
@@ -122,8 +136,8 @@
         async httpRequest(options) {
           const { file, onProgress, onSuccess, onError } = options;
 
-          // 定义切片大小 (例如 0.2MB)
-          const CHUNK_SIZE = 0.2 * 1024 * 1024;
+          // 定义切片大小 (例如 1MB)
+          const CHUNK_SIZE = 1 * 1024 * 1024;
           const chunks = this.createChunks(file, CHUNK_SIZE);
 
           // 为 demo 生成一个简单的 "hash"
@@ -154,8 +168,12 @@
 
             // ✅ 优化：所有切片上传成功后，再设置 hash
             this.fileHash = hash;
-            onSuccess();
-            this.$message.success("所有切片上传完毕，请点击合并。");
+
+            // ✅ 修复：使用 $nextTick 确保 Vue 先更新 :disabled 状态
+            this.$nextTick(() => {
+              onSuccess();
+              this.$message.success("所有切片上传完毕，请点击合并。");
+            });
           } catch (err) {
             onError(err);
             this.fileHash = ""; // ✅ 优化：失败时确保 hash 为空
@@ -181,7 +199,7 @@
             });
 
             // 后端返回 { url: '...', filename: '...' }
-            this.mergedUrl = response.data.url;
+            this.mergedUrl = `http://localhost:3000/${response.data.data.url}`;
             this.$message.success("文件合并成功！");
 
             // 清理状态，防止重复合并
