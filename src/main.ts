@@ -34,7 +34,7 @@ async function bootstrap() {
   app.use(compression());
 
   // prefix 所有路由增加统一前缀
-  // app.setGlobalPrefix('v1');
+  app.setGlobalPrefix("/v1");
 
   // 响应格式化
   app.useGlobalInterceptors(new Response());
@@ -47,7 +47,16 @@ async function bootstrap() {
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
   // 管道验证
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // 自动移除未在DTO中定义的属性
+      forbidNonWhitelisted: true, // 如果存在未定义的属性，抛出错误
+      transform: true, // 自动将请求数据转换为DTO类实例
+      transformOptions: {
+        enableImplicitConversion: true // 允许将字符串参数隐式转换为数字等类型
+      }
+    })
+  );
 
   // 将静态资源托管到指定目录，前端打包出来的dist目录放到public下
   // 前端需设置路由为hash模式（history需要额外配置），前端接口的baseURl设置为 /

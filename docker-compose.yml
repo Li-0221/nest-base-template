@@ -9,10 +9,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://username:password@127.0.0.1:5432/db
+      - DATABASE_URL=postgresql://username:password@db:5432/db_name   # db 指的是容器名称 db_name是数据库名称
       - NODE_ENV=production
       - JWT_ACCESS_SECRET=nestjsPrismaAccessSecret
-    restart: unless-stopped  
+    restart: unless-stopped
+    networks:
+      - app-network
 
   db:
     image: postgres:16-alpine
@@ -20,13 +22,24 @@ services:
     environment:
       - POSTGRES_USER=username 
       - POSTGRES_PASSWORD=password 
-      - POSTGRES_DB=db 
+      - POSTGRES_DB=db_name 
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U username -d db"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  app-network:
+    driver: bridge

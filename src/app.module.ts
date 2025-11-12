@@ -69,8 +69,7 @@ import config from "./common/configs/config";
     },
 
     // BUG https://juejin.cn/post/7290795913136799800
-    // BUG 他会缓存get请求 如果短时间对一个get请求多次 他会读缓存
-    // 我调了删除接口 然后调列表接口 ，然后再删一个 再调列表。界面没有刷新
+    // BUG 他会缓存get请求 如果短时间对一个get请求多次 他会读缓存。我调了删除接口 然后调列表接口 ，然后再删一个 再调列表。界面没有刷新
     // 缓存拦截器
     {
       provide: APP_INTERCEPTOR,

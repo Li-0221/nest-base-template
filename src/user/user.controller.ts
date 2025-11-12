@@ -1,10 +1,9 @@
-import { Controller, Body, Post, Delete, Param, Get, Headers, Query } from "@nestjs/common";
+import { Controller, Body, Post, Delete, Param } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { UserDto } from "./dto/user.dto";
 import { UserListDto } from "./dto/user-list.dto";
-import { User } from "@/common/decorator/user.decorator";
 
 @Controller("user")
 @ApiBearerAuth()
@@ -29,11 +28,5 @@ export class UserController {
   @ApiOperation({ summary: "删除" })
   remove(@Param("id") id: string) {
     return this.userService.remove(id);
-  }
-
-  @Get("stats")
-  @ApiOperation({ summary: "获取统计数据" })
-  stats(@Query("type") type: "day" | "month") {
-    return this.userService.stats(type);
   }
 }

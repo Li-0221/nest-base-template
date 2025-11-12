@@ -3,7 +3,6 @@ import { PrismaService } from "nestjs-prisma";
 import { UserListDto } from "./dto/user-list.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import dayjs from "dayjs";
-import { UserDto } from "./dto/user.dto";
 
 @Injectable()
 export class UserService {
@@ -63,43 +62,5 @@ export class UserService {
       where: { id }
     });
     return "操作成功";
-  }
-
-  async stats(type: "day" | "month") {
-    const list = [];
-    if (type === "day") {
-      const startOfWeek = dayjs().subtract(6, "day");
-
-      for (let i = 0; i < 7; i++) {
-        const date = startOfWeek.add(i, "day");
-        const count = await this.prisma.user.count({
-          where: {
-            createdAt: {
-              gte: date.startOf("day").toDate(),
-              lt: date.endOf("day").toDate()
-            }
-          }
-        });
-        list.push({ date: date.format("YYYY-MM-DD"), count });
-      }
-    } else if (type === "month") {
-      const startOfYear = dayjs().subtract(11, "month").startOf("month");
-
-      for (let i = 0; i < 12; i++) {
-        const date = startOfYear.add(i, "month");
-        const nextDate = date.add(1, "month");
-
-        const count = await this.prisma.user.count({
-          where: {
-            createdAt: {
-              gte: date.startOf("day").toDate(),
-              lt: nextDate.endOf("day").toDate()
-            }
-          }
-        });
-        list.push({ month: date.format("YYYY-MM"), count });
-      }
-    }
-    return list;
   }
 }
