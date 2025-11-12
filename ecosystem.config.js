@@ -13,10 +13,9 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
       },
-      // 输出日志的配置
-      error_file: './logs/error.log',
-      out_file: './logs/output.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      // 关闭日志输出
+      error_file: '/dev/null',
+      out_file: '/dev/null',
     },
   ],
 };
