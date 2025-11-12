@@ -18,7 +18,6 @@ RUN pnpm install --frozen-lockfile
 COPY prisma ./prisma/
 COPY src ./src/
 COPY public ./public/
-COPY publicFile ./publicFile/
 COPY .env ./
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
 COPY ecosystem.config.js ./

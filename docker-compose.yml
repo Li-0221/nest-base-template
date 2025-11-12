@@ -1,28 +1,13 @@
 version: '3.8'
 
 services:
-  backend:
-    build: .
-    container_name: nestjs_app
-    depends_on:
-      - db
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://username:password@db:5432/db_name   # db 指的是容器名称 db_name是数据库名称
-      - NODE_ENV=production
-      - JWT_ACCESS_SECRET=nestjsPrismaAccessSecret
-    restart: unless-stopped
-    networks:
-      - app-network
-
   db:
     image: postgres:16-alpine
     container_name: postgres_db
     environment:
       - POSTGRES_USER=username 
       - POSTGRES_PASSWORD=password 
-      - POSTGRES_DB=db_name 
+      - POSTGRES_DB=dbname 
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -36,6 +21,22 @@ services:
       timeout: 30s
       retries: 3
 
+  backend:
+    build: .
+    container_name: nestjs_app
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://username:password@db:5432/dbname   # db 指的是容器名称 dbname是数据库名称
+      - NODE_ENV=production
+      - JWT_ACCESS_SECRET=nestjsPrismaAccessSecret
+    restart: unless-stopped
+    networks:
+      - app-network
+
+ 
 volumes:
   postgres_data:
     driver: local
