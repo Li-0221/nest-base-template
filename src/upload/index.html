@@ -2,51 +2,114 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <title>NestJS Upload Demo</title>
     <!-- import CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+    <style>
+      body {
+        font-family:
+          "Inter", "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial,
+          sans-serif;
+        padding: 20px;
+        background-color: #f9fafb;
+      }
+      #app {
+        width: 100%;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      }
+      .el-upload,
+      .el-button,
+      .el-alert {
+        margin-top: 20px;
+      }
+    </style>
   </head>
 
   <body>
     <div id="app">
-      <el-upload action="http://localhost:5600/file/upload">
-        <el-button size="small" type="primary">文件上传</el-button>
-      </el-upload>
+      <!-- ✅ 使用 el-form 包裹，并通过 .native.prevent 阻止原生的 submit 事件 -->
+      <el-form @submit.native.prevent>
+        <h2>NestJS 文件上传测试</h2>
 
-      <el-upload
-        style="margin-top: 20px"
-        action="http://localhost:5600/upload"
-        :http-request="httpRequest"
-      >
-        <el-button size="small" type="primary">大文件上传</el-button>
-      </el-upload>
+        <!-- 1. 普通文件上传 -->
+        <el-upload class="upload-demo" drag action="http://localhost:3000/upload/file" multiple :on-success="handleSuccess">
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">
+            普通上传：将文件拖到此处，或
+            <em>点击上传</em>
+          </div>
+          <div class="el-upload__tip" slot="tip">(后端路径: /upload/file)</div>
+        </el-upload>
 
-      <el-button
-        size="small"
-        type="primary"
-        @click="merge"
-        :disabled="!fileName"
-        >合并文件
-      </el-button>
+        <!-- 2. 大文件切片上传 -->
+        <el-upload
+          style="margin-top: 40px"
+          class="upload-demo"
+          action="javascript:void(0);"
+          :http-request="httpRequest"
+          :show-file-list="true"
+          :on-remove="handleRemove"
+        >
+          <el-button size="small" type="primary">大文件上传 (切片)</el-button>
+          <div class="el-upload__tip" slot="tip">(后端路径: /upload/large-upload)</div>
+        </el-upload>
+
+        <!-- 3. 合并按钮 -->
+        {{fileHash}}xxx {{mergedUrl}} ==={{!fileHash || mergedUrl}}
+        <el-button style="margin-top: 20px" size="small" type="success" @click="merge" :loading="mergeLoading">
+          合并文件
+        </el-button>
+
+        <!-- 4. 合并结果显示 -->
+        <el-alert v-if="mergedUrl" :title="'合并成功！'" type="success" style="margin-top: 20px" show-icon :closable="false">
+          <p>
+            文件已保存，访问地址:
+            <a :href="mergedUrl" target="_blank">{{ mergedUrl }}</a>
+          </p>
+        </el-alert>
+      </el-form>
+      <!-- ✅ el-form 结束 -->
     </div>
   </body>
+
   <!-- import Vue before Element -->
   <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
   <!-- import JavaScript -->
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
+    // 基础 URL 配置
+    const API_URL = "http://localhost:3000/upload";
+
     new Vue({
-      el: '#app',
+      el: "#app",
       data() {
         return {
-          fileName: '',
+          fileName: "", // 原始文件名
+          fileHash: "", // 文件 "Hash" (Demo 使用随机字符串)
+          mergedUrl: "", // 合并后的文件 URL
+          mergeLoading: false
         };
       },
       methods: {
-        // 文件切片
+        // 普通上传成功回调
+        handleSuccess(response, file) {
+          this.$message.success(`文件 ${file.name} 上传成功: ${response.url}`);
+        },
+
+        // ✅ 新增：移除文件时的处理
+        handleRemove() {
+          this.fileName = "";
+          this.fileHash = "";
+          this.mergedUrl = "";
+        },
+
+        // 1. 文件切片
         createChunks(file, chunkSize) {
           const result = [];
           for (let i = 0; i < file.size; i += chunkSize) {
@@ -55,30 +118,82 @@
           return result;
         },
 
-        async httpRequest({ file }) {
-          const chunks = this.createChunks(file, 0.5 * 1024 * 1024); // 切片0.5M
+        // 2. 自定义上传 (切片上传)
+        async httpRequest(options) {
+          const { file, onProgress, onSuccess, onError } = options;
 
-          const randomStr = Math.random().toString().slice(2, 8);
-          this.fileName = `${randomStr}-${file.name}`;
+          // 定义切片大小 (例如 0.2MB)
+          const CHUNK_SIZE = 0.2 * 1024 * 1024;
+          const chunks = this.createChunks(file, CHUNK_SIZE);
 
-          for (let i = 0; i < chunks.length; i++) {
-            const formData = new FormData();
-            formData.append('file', chunks[i]);
-            formData.append('name', `${this.fileName}-${i}`);
+          // 为 demo 生成一个简单的 "hash"
+          // 生产环境建议使用 spark-md5 等库计算真实 hash
+          const hash = Math.random().toString().slice(2, 10);
 
-            await axios.post(
-              'http://localhost:5600/file/large-upload',
-              formData,
-            );
+          // ✅ 优化：先重置所有状态
+          this.fileName = file.name;
+          this.fileHash = ""; // 确保开始时 hash 为空
+          this.mergedUrl = "";
+
+          try {
+            for (let i = 0; i < chunks.length; i++) {
+              const formData = new FormData();
+
+              // 按照后端 DTO (LargeFileDto) 格式组装
+              formData.append("file", chunks[i]);
+              formData.append("name", file.name); // 原始文件名
+              formData.append("hash", hash); // 文件 "hash"
+              formData.append("index", i); // 切片索引
+
+              // 发起请求 (注意 URL 变化)
+              await axios.post(`${API_URL}/large-upload`, formData);
+
+              // 更新 Element UI 进度条
+              onProgress({ percent: ((i + 1) / chunks.length) * 100 });
+            }
+
+            // ✅ 优化：所有切片上传成功后，再设置 hash
+            this.fileHash = hash;
+            onSuccess();
+            this.$message.success("所有切片上传完毕，请点击合并。");
+          } catch (err) {
+            onError(err);
+            this.fileHash = ""; // ✅ 优化：失败时确保 hash 为空
+            this.$message.error("切片失败，请重试。");
           }
         },
 
+        // 3. 合并文件
         async merge() {
-          await axios.get(
-            `http://localhost:5600/file/merge?name=${this.fileName}`,
-          );
-        },
-      },
+          if (!this.fileName || !this.fileHash) {
+            this.$message.warning("请先上传切片文件。");
+            return;
+          }
+
+          this.mergeLoading = true;
+          try {
+            // 请求合并 (注意 URL 和 query 参数)
+            const response = await axios.get(`${API_URL}/merge`, {
+              params: {
+                name: this.fileName,
+                hash: this.fileHash
+              }
+            });
+
+            // 后端返回 { url: '...', filename: '...' }
+            this.mergedUrl = response.data.url;
+            this.$message.success("文件合并成功！");
+
+            // 清理状态，防止重复合并
+            this.fileName = "";
+            this.fileHash = "";
+          } catch (err) {
+            this.$message.error("合并失败：" + (err.response?.data?.message || err.message));
+          } finally {
+            this.mergeLoading = false;
+          }
+        }
+      }
     });
   </script>
 </html>
