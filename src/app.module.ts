@@ -29,11 +29,13 @@ import config from "./common/configs/config";
         ]
       }
     }),
+
     JwtModule.register({
       global: true,
       secret: process.env.JWT_ACCESS_SECRET,
       signOptions: { expiresIn: "7days" }
     }),
+
     // @SkipThrottle() 取消对某个路由的节流限制
     // @Throttle() 覆盖默认配置
     ThrottlerModule.forRoot([
@@ -42,12 +44,12 @@ import config from "./common/configs/config";
         limit: 600
       }
     ]),
+
     // 如需使用redis https://docs.nestjs.com/techniques/caching#different-stores
     CacheModule.register({ max: 100, isGlobal: true }),
 
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ".env",
       load: [config]
     }),
 
@@ -62,6 +64,7 @@ import config from "./common/configs/config";
       provide: APP_GUARD,
       useClass: AuthGuard
     },
+
     // 请求守卫
     {
       provide: APP_GUARD,
@@ -75,6 +78,7 @@ import config from "./common/configs/config";
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor
     },
+
     AppService
   ]
 })

@@ -3,7 +3,7 @@ import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { createLogger, transports, format } from "winston";
 import dayjs from "dayjs";
-import { isObjectEmpty } from "@/utils";
+import { isObjectEmpty } from "@/common/utils";
 
 const logger = createLogger({
   level: "debug",
