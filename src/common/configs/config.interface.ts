@@ -2,6 +2,7 @@ export interface Config {
   nest: NestConfig;
   cors: CorsConfig;
   swagger: SwaggerConfig;
+  upload: UploadConfig;
 }
 
 export interface NestConfig {
@@ -18,4 +19,9 @@ export interface SwaggerConfig {
   description: string;
   version: string;
   path: string;
+}
+
+export interface UploadConfig {
+  path: string;
+  prefix: string;
 }

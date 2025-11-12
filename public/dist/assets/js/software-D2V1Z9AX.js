@@ -1,1 +1,0 @@
-import{a4 as e}from"./index-MVVa4Kd4.js";const r=()=>e.post("/software-type"),o=t=>e.post("/software-type/add",t),a=t=>e.post("/software-type/edit",t),f=t=>e.delete(`/software-type/${t}`),p=t=>e.post("/software/list",t),n=t=>e.post("/software/create",t),w=t=>e.post("/software/edit",t),d=t=>e.delete(`/software/${t}`);export{n as a,r as b,o as c,d,w as e,a as f,f as g,p as s};

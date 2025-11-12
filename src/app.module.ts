@@ -1,19 +1,19 @@
-import { MiddlewareConsumer, Module, Logger } from '@nestjs/common';
-import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
-import { ConfigModule } from '@nestjs/config';
-import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import LoggerMiddleware from './common/middleware/logger.middleware';
-import { AuthGuard } from './common/guard/auth.guard';
-import { JwtModule } from '@nestjs/jwt';
-import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
-import { ThrottlerBehindProxyGuard } from '@/common/guard/throttler-behind-proxy.guard';
-import { UserModule } from './user/user.module';
-import { FileModule } from './file/file.module';
-import config from './common/configs/config';
+import { MiddlewareConsumer, Module, Logger } from "@nestjs/common";
+import { APP_INTERCEPTOR, APP_GUARD } from "@nestjs/core";
+import { ConfigModule } from "@nestjs/config";
+import { CacheModule, CacheInterceptor } from "@nestjs/cache-manager";
+import { ThrottlerModule } from "@nestjs/throttler";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { AuthModule } from "./auth/auth.module";
+import LoggerMiddleware from "./common/middleware/logger.middleware";
+import { AuthGuard } from "./common/guard/auth.guard";
+import { JwtModule } from "@nestjs/jwt";
+import { PrismaModule, loggingMiddleware } from "nestjs-prisma";
+import { ThrottlerBehindProxyGuard } from "@/common/guard/throttler-behind-proxy.guard";
+import { UserModule } from "./user/user.module";
+import { FileModule } from "./upload/upload.module";
+import config from "./common/configs/config";
 
 @Module({
   imports: [
@@ -23,49 +23,49 @@ import config from './common/configs/config';
         middlewares: [
           // configure your prisma middleware
           loggingMiddleware({
-            logger: new Logger('PrismaMiddleware'),
-            logLevel: 'log',
-          }),
-        ],
-      },
+            logger: new Logger("PrismaMiddleware"),
+            logLevel: "log"
+          })
+        ]
+      }
     }),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_ACCESS_SECRET,
-      signOptions: { expiresIn: '7days' },
+      signOptions: { expiresIn: "7days" }
     }),
     // @SkipThrottle() 取消对某个路由的节流限制
     // @Throttle() 覆盖默认配置
     ThrottlerModule.forRoot([
       {
         ttl: 60 * 1000, //60s 内一个接口允许请求 600次
-        limit: 600,
-      },
+        limit: 600
+      }
     ]),
     // 如需使用redis https://docs.nestjs.com/techniques/caching#different-stores
     CacheModule.register({ max: 100, isGlobal: true }),
 
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
-      load: [config],
+      envFilePath: ".env",
+      load: [config]
     }),
 
     AuthModule,
     UserModule,
-    FileModule,
+    FileModule
   ],
   controllers: [AppController],
   providers: [
     // token守卫
     {
       provide: APP_GUARD,
-      useClass: AuthGuard,
+      useClass: AuthGuard
     },
     // 请求守卫
     {
       provide: APP_GUARD,
-      useClass: ThrottlerBehindProxyGuard,
+      useClass: ThrottlerBehindProxyGuard
     },
 
     // BUG https://juejin.cn/post/7290795913136799800
@@ -74,13 +74,13 @@ import config from './common/configs/config';
     // 缓存拦截器
     {
       provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
+      useClass: CacheInterceptor
     },
-    AppService,
-  ],
+    AppService
+  ]
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes("*");
   }
 }
